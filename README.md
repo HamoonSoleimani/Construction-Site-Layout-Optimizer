@@ -257,4 +257,3 @@ This software is provided 'as-is', without any express or implied warranty. In n
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 
-*(This is a Zlib-like license based on the common "as-is" disclaimer. You may wish to replace it with a standard open-source license like MIT if preferred.)*
