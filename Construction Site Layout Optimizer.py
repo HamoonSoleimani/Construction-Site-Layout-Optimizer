@@ -37,6 +37,16 @@ from PyQt5.QtGui import (QPainter, QColor, QBrush, QPen, QFont, QPainterPath,
                         QLinearGradient, QFontMetricsF, QCursor, # <--- ADDED QCursor HERE
                         QPaintEvent, QMouseEvent, QWheelEvent, QKeyEvent, QCloseEvent, QResizeEvent, QContextMenuEvent)
 
+DARK_THEME_TEXT_COLOR = QColor(220, 220, 220)
+DARK_THEME_INFO_TEXT_COLOR = QColor(180, 180, 180) # Lighter gray for info text on dark background
+DARK_THEME_BORDER_COLOR = QColor(85, 85, 85)     # Darker gray for borders on dark background
+DARK_THEME_GROUPBOX_BG_COLOR = QColor(55, 55, 55) # Slightly lighter than main window for groupboxes
+DARK_THEME_BUTTON_BG_COLOR = QColor(70, 70, 70)
+DARK_THEME_BUTTON_HOVER_BG_COLOR = QColor(90, 90, 90)
+DARK_THEME_BUTTON_PRESSED_BG_COLOR = QColor(60, 60, 60)
+DARK_THEME_SUCCESS_BUTTON_BG_COLOR = QColor(40, 120, 65) # Darker green
+DARK_THEME_SUCCESS_BUTTON_HOVER_BG_COLOR = QColor(50, 140, 75)
+DARK_THEME_SUCCESS_BUTTON_PRESSED_BG_COLOR = QColor(30, 100, 55)
 
 # --- Global Default Configurations ---
 SITE_ELEMENTS = {
@@ -2387,7 +2397,7 @@ class SiteCanvas(QWidget):
 
         # Draw plot boundary if it's visible in the widget viewport
         if self.plot_rect_on_screen.intersects(self.widget_viewport_rect_f):
-            painter.setPen(QPen(QColor(50, 50, 50), 2.0, Qt.SolidLine)) # Darker, slightly thicker boundary
+            painter.setPen(QPen(QColor(90, 90, 90), 2.0, Qt.SolidLine)) # Slightly lighter border for dark bg
             painter.drawRect(self.plot_rect_on_screen)
 
         # Draw grid if enabled and visible
@@ -2467,7 +2477,9 @@ class SiteCanvas(QWidget):
         world_br_visible = self.screen_to_world_coords(draw_area.right(), draw_area.bottom())
 
         # Major grid lines
-        pen_major = QPen(QColor(200, 200, 200, 100), 1.0, Qt.SolidLine) # Lighter alpha
+        pen_major = QPen(QColor(80, 80, 80, 120), 1.0, Qt.SolidLine) # Darker for dark theme
+        painter.setPen(pen_major)
+
         painter.setPen(pen_major)
         start_x_m_major = math.floor(world_tl_visible.x() / major_spacing_m) * major_spacing_m
         for wx_m in np.arange(start_x_m_major, world_br_visible.x() + 1e-6, major_spacing_m):
@@ -2485,7 +2497,7 @@ class SiteCanvas(QWidget):
 
         # Minor grid lines (if enabled and conditions met)
         if show_minor and minor_spacing_m > 0.01 : # Ensure minor_spacing is sensible
-            pen_minor = QPen(QColor(220, 220, 220, 70), 0.75, Qt.DotLine) # Even lighter
+            pen_minor = QPen(QColor(65, 65, 65, 90), 0.75, Qt.DotLine)
             painter.setPen(pen_minor)
             start_x_m_minor = math.floor(world_tl_visible.x() / minor_spacing_m) * minor_spacing_m
             for wx_m in np.arange(start_x_m_minor, world_br_visible.x() + 1e-6, minor_spacing_m):
@@ -2763,7 +2775,7 @@ class SiteCanvas(QWidget):
         if actual_bar_width_px < 20: return # Still too small on screen after choosing nice number
 
         start_x_px = margin_px
-        painter.setPen(QPen(Qt.black, 1.5)) # Thicker pen for scale bar
+        painter.setPen(QPen(self.palette().color(QPalette.Text), 1.5))
         painter.setBrush(Qt.NoBrush)
 
         # Draw main horizontal line
@@ -2774,7 +2786,7 @@ class SiteCanvas(QWidget):
                                 start_x_px + actual_bar_width_px, bar_y_pos_px + bar_height_px/2))
 
         # Draw label for the scale bar
-        font = painter.font(); font.setPixelSize(10); painter.setFont(font); painter.setPen(Qt.black)
+        font = painter.font(); font.setPixelSize(10); painter.setFont(font); painter.setPen(self.palette().color(QPalette.Text))
         label_text = f"{best_length_m:g} m" # 'g' format: concise float/int (e.g., "50 m", "2.5 m")
         fm = QFontMetricsF(font)
         label_width_px = fm.horizontalAdvance(label_text)
@@ -2786,7 +2798,7 @@ class SiteCanvas(QWidget):
     def _draw_view_info(self, painter: QPainter):
         """Draws view information like zoom level and mouse coordinates at the bottom-right."""
         font = painter.font(); font.setPixelSize(9); painter.setFont(font)
-        painter.setPen(QColor(70, 70, 70)) # Dark gray text
+        painter.setPen(self.palette().color(QPalette.Midlight)) # Use palette color
 
         zoom_percentage = (self.scale_factor_px_per_m / self.NOMINAL_PX_PER_METER) * 100
         info_parts = [f"Zoom: {zoom_percentage:.0f}%"]
@@ -3187,7 +3199,7 @@ class ElementPropertiesWidget(QWidget):
         row +=1
 
         self.placeable_info_label = QLabel("") # For "Eligible for internal placement"
-        self.placeable_info_label.setStyleSheet("font-style: italic; color: #555;")
+        self.placeable_info_label.setStyleSheet(f"font-style: italic; color: {DARK_THEME_INFO_TEXT_COLOR.name()};")
         general_layout.addWidget(self.placeable_info_label, row, 0, 1, 2) # Span both columns
         row +=1
 
@@ -3243,7 +3255,7 @@ class ElementPropertiesWidget(QWidget):
 
         self.transform_layout.addWidget(QLabel("Area (m²):"), row, 0)
         self.area_label = QLabel("0.00")
-        self.area_label.setStyleSheet("font-style: italic; color: #333;")
+        self.area_label.setStyleSheet(f"font-style: italic; color: {DARK_THEME_INFO_TEXT_COLOR.name()};")
         self.area_label.setToolTip("Calculated area (Width × Height).")
         self.transform_layout.addWidget(self.area_label, row, 1)
         row +=1
@@ -3278,7 +3290,9 @@ class ElementPropertiesWidget(QWidget):
 
         self.delete_button = QPushButton(QIcon.fromTheme("edit-delete", QIcon(":/icons/delete.png")), "Delete")
         self.delete_button.setToolTip("Remove this element from the layout (if allowed).")
-        self.delete_button.setStyleSheet("QPushButton { color: #d9534f; font-weight: bold; }") # Bootstrap danger-like
+        self.delete_button.setStyleSheet(f"QPushButton {{ color: #FF6B6B; font-weight: bold; background-color: {QColor(80,40,40).name()}; border: 1px solid {QColor(120,60,60).name()}; }} "
+                                         f"QPushButton:hover {{ background-color: {QColor(100,50,50).name()}; }} "
+                                         f"QPushButton:pressed {{ background-color: {QColor(70,30,30).name()}; }}")
         self.delete_button.clicked.connect(self._on_delete_requested)
         actions_layout.addWidget(self.delete_button)
 
@@ -3510,17 +3524,17 @@ class ElementPropertiesWidget(QWidget):
 
 
     def _update_color_button_style(self):
-        if self.element and hasattr(self.element, 'color'):
-            c = self.element.color
-            brightness = (c.redF() * 0.299 + c.greenF() * 0.587 + c.blueF() * 0.114)
-            text_color = "black" if brightness > 0.55 else "white" # Adjusted threshold
-            self.color_button.setStyleSheet(
-                f"QPushButton {{ background-color: {c.name()}; color: {text_color}; border: 1px solid #555; padding: 4px; }}"
-                f"QPushButton:hover {{ background-color: {c.lighter(115).name()}; }}"
-                f"QPushButton:pressed {{ background-color: {c.darker(115).name()}; }}"
-            )
-        else:
-            self.color_button.setStyleSheet("")
+            if self.element and hasattr(self.element, 'color'):
+                c = self.element.color
+                brightness = (c.redF() * 0.299 + c.greenF() * 0.587 + c.blueF() * 0.114)
+                text_color = "black" if brightness > 0.65 else "white" # Adjusted threshold for better contrast
+                self.color_button.setStyleSheet(
+                    f"QPushButton {{ background-color: {c.name()}; color: {text_color}; border: 1px solid {DARK_THEME_BORDER_COLOR.name()}; padding: 4px; }}"
+                    f"QPushButton:hover {{ background-color: {c.lighter(115).name()}; }}"
+                    f"QPushButton:pressed {{ background-color: {c.darker(115).name()}; }}"
+                )
+            else:
+                self.color_button.setStyleSheet("") # Reset to default (will pick up global app style)
 
 
     def _on_delete_requested(self):
@@ -3594,7 +3608,7 @@ class SpaceRequirementsWidget(QWidget):
             "set the total area. The main 'Building' footprint is configured separately under 'Site & Building Configuration'."
         )
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("font-size: 9pt; color: #444;")
+        info_label.setStyleSheet(f"font-size: 9pt; color: {DARK_THEME_INFO_TEXT_COLOR.name()};")
         main_layout.addWidget(info_label)
 
         # --- Scrollable Area for Element Inputs ---
@@ -3625,7 +3639,7 @@ class SpaceRequirementsWidget(QWidget):
             lbl = QLabel(f"<b>{txt}</b>") # Bold header text
             lbl.setAlignment(Qt.AlignCenter if col > 0 else Qt.AlignLeft | Qt.AlignVCenter)
             lbl.setToolTip(tooltip_text)
-            lbl.setStyleSheet("padding-bottom: 3px; border-bottom: 1px solid #ccc;") # Underline effect
+            lbl.setStyleSheet(f"padding-bottom: 3px; border-bottom: 1px solid {DARK_THEME_BORDER_COLOR.name()}; color: {DARK_THEME_TEXT_COLOR.name()};")
             self.grid_layout.addWidget(lbl, 0, col)
 
         # --- Populate rows for each site element type (excluding 'Building') ---
@@ -3649,7 +3663,7 @@ class SpaceRequirementsWidget(QWidget):
                 personnel_group_box = QGroupBox() # No title, just for grouping inputs
                 personnel_group_box.setFlat(True) # Less obtrusive border
                 personnel_group_box.setStyleSheet(
-                    "QGroupBox { border: 1px solid #ddd; border-radius: 3px; margin-top: 0px; padding: 4px; }"
+                    f"QGroupBox {{ border: 1px solid {DARK_THEME_BORDER_COLOR.name()}; border-radius: 3px; margin-top: 0px; padding: 4px; }}"
                 )
                 personnel_grid = QGridLayout(personnel_group_box)
                 personnel_grid.setSpacing(6)
@@ -3681,7 +3695,7 @@ class SpaceRequirementsWidget(QWidget):
                 # Placeholder for non-personnel elements to maintain grid alignment
                 placeholder_label = QLabel("- Not Applicable -")
                 placeholder_label.setAlignment(Qt.AlignCenter)
-                placeholder_label.setStyleSheet("color: #777; font-style: italic;")
+                placeholder_label.setStyleSheet(f"color: {DARK_THEME_INFO_TEXT_COLOR.name()}; font-style: italic;")
                 self.grid_layout.addWidget(placeholder_label, current_row_idx, 1, Qt.AlignTop | Qt.AlignCenter)
 
             # Total Area SpinBox (always present)
@@ -3698,7 +3712,7 @@ class SpaceRequirementsWidget(QWidget):
             suggestion_lbl = QLabel("N/A")
             suggestion_lbl.setToolTip("Approximate Width × Height based on total area and a typical aspect ratio. "
                                       "Fixed-size elements will show their defined dimensions.")
-            suggestion_lbl.setStyleSheet("font-style: italic; color: #555;")
+            suggestion_lbl.setStyleSheet(f"font-style: italic; color: {DARK_THEME_INFO_TEXT_COLOR.name()};")
             suggestion_lbl.setMinimumWidth(100) # Ensure space for text like "12.3m × 45.6m"
             suggestion_lbl.setAlignment(Qt.AlignCenter)
             self.grid_layout.addWidget(suggestion_lbl, current_row_idx, 3, Qt.AlignTop | Qt.AlignCenter)
@@ -4077,7 +4091,7 @@ class ConstraintsWidget(QWidget):
             "These include safety distances, operational limits (e.g., crane reach), and general spacing."
         )
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("font-size: 9pt; color: #444;")
+        info_label.setStyleSheet(f"font-size: 9pt; color: {DARK_THEME_INFO_TEXT_COLOR.name()};")
         main_layout.addWidget(info_label)
 
         # Scrollable area for the list of constraints
@@ -4145,7 +4159,7 @@ class ConstraintsWidget(QWidget):
             description_text = self._get_constraint_description(key)
             description_label = QLabel(description_text)
             description_label.setWordWrap(True)
-            description_label.setStyleSheet("color: #555; font-size: 8pt; padding-left: 5px;")
+            description_label.setStyleSheet(f"color: {DARK_THEME_INFO_TEXT_COLOR.name()}; font-size: 8pt; padding-left: 5px;")
             grid_layout.addWidget(description_label, current_row_idx, 2, Qt.AlignLeft | Qt.AlignTop)
 
             current_row_idx += 1
@@ -4324,7 +4338,7 @@ class OptimizationControlWidget(QWidget):
             "strategy to guide the layout process towards desired objectives."
         )
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("font-size: 9pt; color: #444;") # Softer color
+        info_label.setStyleSheet(f"font-size: 9pt; color: {DARK_THEME_INFO_TEXT_COLOR.name()};") # Softer color
         layout.addWidget(info_label)
 
         # Parameters Grid GroupBox
@@ -4437,17 +4451,21 @@ class OptimizationControlWidget(QWidget):
 
         self.status_label = QLabel("Strategy: Balanced (Default)") # Initial status reflecting default
         self.status_label.setWordWrap(True)
-        self.status_label.setStyleSheet("font-size: 9pt; padding: 3px;")
+        self.status_label.setStyleSheet(f"font-size: 9pt; padding: 3px; color: {DARK_THEME_INFO_TEXT_COLOR.name()};")
         layout.addWidget(self.status_label)
 
         # Optimize Button
         self.optimize_button = QPushButton(QIcon(), "Run Optimization") # Placeholder for icon
         self.optimize_button.clicked.connect(self.emit_start_optimization_signal)
         self.optimize_button.setStyleSheet(
-            "QPushButton { background-color: #28a745; color: white; padding: 8px; font-size: 10pt; border-radius: 4px; }"
-            "QPushButton:hover { background-color: #218838; }"
-            "QPushButton:pressed { background-color: #1e7e34; }"
-            "QPushButton:disabled { background-color: #e9ecef; color: #6c757d; }"
+            # "QPushButton { background-color: #28a745; color: white; padding: 8px; font-size: 10pt; border-radius: 4px; }"
+            # "QPushButton:hover { background-color: #218838; }"
+            # "QPushButton:pressed { background-color: #1e7e34; }"
+            # "QPushButton:disabled { background-color: #e9ecef; color: #6c757d; }"
+            f"QPushButton {{ background-color: {DARK_THEME_SUCCESS_BUTTON_BG_COLOR.name()}; color: white; padding: 8px; font-size: 10pt; border-radius: 4px; }}"
+            f"QPushButton:hover {{ background-color: {DARK_THEME_SUCCESS_BUTTON_HOVER_BG_COLOR.name()}; }}"
+            f"QPushButton:pressed {{ background-color: {DARK_THEME_SUCCESS_BUTTON_PRESSED_BG_COLOR.name()}; }}"
+            f"QPushButton:disabled {{ background-color: {QColor(60,60,60).name()}; color: {QColor(127,127,127).name()}; }}"
         )
         self.optimize_button.setMinimumHeight(35) # Make button a bit taller
         layout.addWidget(self.optimize_button)
@@ -4634,7 +4652,7 @@ class DisplayOptionsWidget(QWidget):
             "Control the visibility of various informational overlays and visual aids on the site layout canvas."
         )
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("font-size: 9pt; color: #444;")
+        info_label.setStyleSheet(f"font-size: 9pt; color: {DARK_THEME_INFO_TEXT_COLOR.name()};")
         main_layout.addWidget(info_label)
 
         # GroupBox for better organization
@@ -4922,10 +4940,15 @@ class ConstructionSiteOptimizerApp(QMainWindow):
 
         self.run_opt_button_ui = QPushButton(QIcon(), "Run Optimization") # Added icon placeholder
         self.run_opt_button_ui.setToolTip("Start the automated layout optimization process.")
-        self.run_opt_button_ui.setStyleSheet( # Make it stand out slightly
-            "QPushButton { background-color: #007bff; color: white; padding: 6px; border-radius: 3px;}"
-            "QPushButton:hover { background-color: #0069d9; }"
-            "QPushButton:disabled { background-color: #e9ecef; color: #6c757d; }"
+        # self.run_opt_button_ui.setStyleSheet( # Make it stand out slightly
+        #     "QPushButton { background-color: #007bff; color: white; padding: 6px; border-radius: 3px;}"
+        #     "QPushButton:hover { background-color: #0069d9; }"
+        #     "QPushButton:disabled { background-color: #e9ecef; color: #6c757d; }"
+        # )
+        self.run_opt_button_ui.setStyleSheet(
+            f"QPushButton {{ background-color: {DARK_THEME_SUCCESS_BUTTON_BG_COLOR.name()}; color: white; padding: 6px; border-radius: 3px;}}"
+            f"QPushButton:hover {{ background-color: {DARK_THEME_SUCCESS_BUTTON_HOVER_BG_COLOR.name()}; }}"
+            f"QPushButton:disabled {{ background-color: {QColor(60,60,60).name()}; color: {QColor(127,127,127).name()}; }}"
         )
         action_buttons_layout.addWidget(self.run_opt_button_ui)
         left_panel_layout.addLayout(action_buttons_layout)
@@ -4963,7 +4986,7 @@ class ConstructionSiteOptimizerApp(QMainWindow):
         metrics_layout.setContentsMargins(8, 4, 8, 4) # Padding inside the metrics bar
 
         self.info_text_label = QLabel("Tip: Select elements to edit. Use Shift+Drag or Middle-Mouse to pan. Wheel to zoom.")
-        self.info_text_label.setStyleSheet("font-size: 8pt; color: #555;")
+        self.info_text_label.setStyleSheet(f"font-size: 8pt; color: {DARK_THEME_INFO_TEXT_COLOR.name()};")
         metrics_layout.addWidget(self.info_text_label)
         metrics_layout.addStretch()
 
@@ -5419,7 +5442,7 @@ class ConstructionSiteOptimizerApp(QMainWindow):
             'building_ratio': self.building_ratio_val,
             'constraints': self.current_constraints,
             'space_requirements': self.current_space_requirements,
-            'personnel_config': self.space_widget.get_personnel_config(), # Save personnel setup
+            'personnel_config': self.space_widget.get_current_personnel_config(), # Save personnel setup
             'elements': []
         }
         for el in self.optimizer.elements:
@@ -5912,15 +5935,59 @@ class ConstructionSiteOptimizerApp(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     # Apply a style (optional, 'Fusion' is good cross-platform)
-    app.setStyle('Fusion') 
-    
-    # You can set a global palette here if desired
-    # palette = QPalette() ... app.setPalette(palette)
+    app.setStyle('Fusion')
+
+    # --- Dark Theme Palette ---
+    dark_palette = QPalette()
+    dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.WindowText, DARK_THEME_TEXT_COLOR)
+    dark_palette.setColor(QPalette.Base, QColor(42, 42, 42))
+    dark_palette.setColor(QPalette.AlternateBase, QColor(66, 66, 66))
+    dark_palette.setColor(QPalette.ToolTipBase, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.ToolTipText, DARK_THEME_TEXT_COLOR)
+    dark_palette.setColor(QPalette.Text, DARK_THEME_TEXT_COLOR)
+    dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.ButtonText, DARK_THEME_TEXT_COLOR)
+    dark_palette.setColor(QPalette.BrightText, Qt.red)
+    dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
+    dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+    dark_palette.setColor(QPalette.HighlightedText, Qt.black)
+
+    dark_palette.setColor(QPalette.Disabled, QPalette.Text, QColor(127, 127, 127))
+    dark_palette.setColor(QPalette.Disabled, QPalette.ButtonText, QColor(127, 127, 127))
+    dark_palette.setColor(QPalette.Disabled, QPalette.WindowText, QColor(127, 127, 127))
+    dark_palette.setColor(QPalette.Disabled, QPalette.Highlight, QColor(80, 80, 80))
+    dark_palette.setColor(QPalette.Disabled, QPalette.HighlightedText, QColor(127, 127, 127))
+
+    app.setPalette(dark_palette)
+    app.setStyleSheet(
+        "QToolTip { color: #ffffff; background-color: #2a2a2a; border: 1px solid #32414B; }"
+        "QGroupBox { background-color: transparent; border: 1px solid " + DARK_THEME_BORDER_COLOR.name() + "; margin-top: 2ex; }"
+        "QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top center; padding: 0 3px; background-color: " + DARK_THEME_GROUPBOX_BG_COLOR.name() + "; color:" + DARK_THEME_TEXT_COLOR.name() + ";}"
+        "QTabWidget::pane { border: 1px solid " + DARK_THEME_BORDER_COLOR.name() + "; }"
+        "QTabBar::tab { background: " + DARK_THEME_GROUPBOX_BG_COLOR.name() + "; color: " + DARK_THEME_TEXT_COLOR.name() + "; padding: 5px; margin-right: 2px; border-top-left-radius: 4px; border-top-right-radius: 4px;}"
+        "QTabBar::tab:selected { background: " + QColor(66, 66, 66).name() + "; }" # Slightly lighter for selected tab
+        "QTabBar::tab:hover { background: " + QColor(77, 77, 77).name() + "; }"
+        "QScrollArea { border: 1px solid " + DARK_THEME_BORDER_COLOR.name() + "; background-color: " + QColor(42, 42, 42).name() + ";}"
+        "QScrollBar:vertical { border: 1px solid " + DARK_THEME_BORDER_COLOR.name() + "; background: " + QColor(53, 53, 53).name() + "; width: 10px; margin: 0px 0px 0px 0px; }"
+        "QScrollBar::handle:vertical { background: " + QColor(80,80,80).name() + "; min-height: 20px; border-radius: 5px; }"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { background: none; border: none; height: 0px; }"
+        "QScrollBar:horizontal { border: 1px solid " + DARK_THEME_BORDER_COLOR.name() + "; background: " + QColor(53, 53, 53).name() + "; height: 10px; margin: 0px 0px 0px 0px; }"
+        "QScrollBar::handle:horizontal { background: " + QColor(80,80,80).name() + "; min-width: 20px; border-radius: 5px; }"
+        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { background: none; border: none; width: 0px; }"
+        "QPushButton { background-color: " + DARK_THEME_BUTTON_BG_COLOR.name() + "; border: 1px solid " + DARK_THEME_BORDER_COLOR.name() + "; padding: 5px; border-radius: 3px; }"
+        "QPushButton:hover { background-color: " + DARK_THEME_BUTTON_HOVER_BG_COLOR.name() + "; }"
+        "QPushButton:pressed { background-color: " + DARK_THEME_BUTTON_PRESSED_BG_COLOR.name() + "; }"
+        "QPushButton:disabled { background-color: " + QColor(60,60,60).name() + "; color: " + QColor(127,127,127).name() + "; }"
+        "QSpinBox, QDoubleSpinBox { padding-right: 15px; border: 1px solid " + DARK_THEME_BORDER_COLOR.name() + "; border-radius: 3px; background-color: " + QColor(42,42,42).name() + "; }"
+
+    )
 
     main_window = ConstructionSiteOptimizerApp()
     main_window.show()
+    # Issue 3: Default "Fit View" - Call after window is shown and layout potentially initialized
+    QTimer.singleShot(200, lambda: main_window.site_canvas.fit_plot_to_view())
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
-
     main()
