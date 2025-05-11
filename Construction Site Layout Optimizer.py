@@ -4521,8 +4521,8 @@ class OptimizationControlWidget(QWidget):
 
         elif approach_id == 1:  # Safety Priority
             self.optimization_weights.update({
-                'overlap': 500.0, # Significantly higher
-                'out_of_bounds': 400.0, # Significantly higher
+                'overlap': 2500.0, # Significantly higher
+                'out_of_bounds': 4000.0, # Significantly higher
                 'movable_on_building_penalty': 5000.0, # Max critical
                 'fuel_welding_dist_penalty': 30.0,
                 'fuel_welding_safety_bonus': 2.5,
@@ -4536,6 +4536,9 @@ class OptimizationControlWidget(QWidget):
 
         elif approach_id == 2:  # Efficiency Priority
             self.optimization_weights.update({
+                'overlap': 2500.0, # Significantly higher
+                'out_of_bounds': 4000.0, # Significantly higher
+                'movable_on_building_penalty': 1000.0, # Max critical
                 'storage_welding_dist_penalty': 6.0, # Higher penalty if far
                 'storage_welding_dist_bonus': 5.0,   # Higher bonus if close
                 'crane_full_coverage_bonus': 75.0,   # Stronger emphasis on crane coverage
@@ -4547,6 +4550,9 @@ class OptimizationControlWidget(QWidget):
 
         elif approach_id == 3: # Comfort & Spacing
             self.optimization_weights.update({
+                'overlap': 2500.0, # Significantly higher
+                'out_of_bounds': 4000.0, # Significantly higher
+                'movable_on_building_penalty': 1000.0, # Max critical
                 'comfort_safety_penalty': 2.0, # Lower penalty, focus on bonus
                 'comfort_safety_bonus': 2.0,   # Higher bonus for good distance from hazards
                 'spacing_bonus': 3.0,          # Strong bonus for good spacing (exceeding buffer)
