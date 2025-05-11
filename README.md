@@ -83,11 +83,10 @@ A sophisticated GUI application designed for optimizing the layout of temporary 
     ```
 
 3.  **Run the Application:**
-    Navigate to the directory containing the application script (e.g., `main_app_script.py`) and run:
+    Navigate to the directory containing the application script and run:
     ```bash
     python 'Construction Site Layout Optimizer.py'
     ```
-    *(Replace `main_app_script.py` with the actual name of the main Python file.)*
 
 ## Usage Overview
 
