@@ -49,15 +49,15 @@ SITE_ELEMENTS = {
     'Sanitary Facilities': {'color': QColor(144, 238, 144), 'movable': True, 'priority': 4, 'placeable_inside_building': True, 'resizable': True, 'aspect_ratio': 1.0},
     'Material Storage': {'color': QColor(210, 180, 140), 'movable': True, 'priority': 2, 'placeable_inside_building': True, 'resizable': True, 'aspect_ratio': 2.5},
     'Welding Workshop': {'color': QColor(255, 140, 0), 'movable': True, 'priority': 2, 'placeable_inside_building': False, 'resizable': True, 'aspect_ratio': 1.8},
-    'Tower Crane': {'color': QColor(128, 0, 0), 'movable': True, 'priority': 1, 'placeable_inside_building': False, 'resizable': False, 'fixed_width': 7.0, 'fixed_height': 7.0},
+    'Tower Crane': {'color': QColor(128, 0, 0), 'movable': True, 'priority': 1, 'placeable_inside_building': False, 'resizable': True, 'fixed_width': 7.0, 'fixed_height': 7.0},
     'Fuel Tank': {'color': QColor(255, 0, 0), 'movable': True, 'priority': 5, 'placeable_inside_building': False, 'resizable': False, 'fixed_width': 4.0, 'fixed_height': 4.0},
     'Machinery Parking': {'color': QColor(169, 169, 169), 'movable': True, 'priority': 4, 'placeable_inside_building': False, 'resizable': True, 'aspect_ratio': 2.0}
 }
 DEFAULT_SPACE_REQUIREMENTS = { # Example values
-    'Building': 2400.0, 'Contractor Office': 70.0, 'Consultant Office': 50.0, 'Client Office': 30.0,
-    'Workers Dormitory': 200.0, 'Security Post': 12.0, 'Sanitary Facilities': 40.0,
-    'Material Storage': 300.0, 'Welding Workshop': 150.0, 'Tower Crane': 49.0,
-    'Fuel Tank': 16.0, 'Machinery Parking': 250.0
+    'Building': 2400.0, 'Contractor Office': 35.0, 'Consultant Office': 25.0, 'Client Office': 15.0,
+    'Workers Dormitory': 100.0, 'Security Post': 6.0, 'Sanitary Facilities': 20.0,
+    'Material Storage': 150.0, 'Welding Workshop': 75.0, 'Tower Crane': 36.0,
+    'Fuel Tank': 8.0, 'Machinery Parking': 120.0
 }
 DEFAULT_CONSTRAINTS = {
     'min_distance_fuel_dormitory': 25.0, 'min_distance_fuel_welding': 20.0,
@@ -78,7 +78,7 @@ SA_MIN_TEMPERATURE = 0.01
 SA_REHEAT_FACTOR = 1.8
 SA_REHEAT_THRESHOLD_TEMP = 5.0
 APP_VERSION = "1.2.0"
-ORGANIZATION_NAME = "MyCompany" # For QSettings
+ORGANIZATION_NAME = "HamoonSoleimani" # For QSettings
 APPLICATION_NAME = "ConstructionSiteOptimizer" # For QSettings
 # --- Site Element Definition ---
 class SiteElement:
@@ -1042,7 +1042,7 @@ class OptimizationEngine:
     """
 
     def __init__(self, plot_width, plot_height, elements=None, constraints=None,
-                space_requirements=None, building_ratio=0.75):
+                space_requirements=None, building_ratio=0.45):
         """
         Initializes the OptimizationEngine.
 
@@ -1052,7 +1052,7 @@ class OptimizationEngine:
             elements (list, optional): A list of pre-existing SiteElement objects. Defaults to None.
             constraints (dict, optional): A dictionary of constraint parameters. Defaults to None.
             space_requirements (dict, optional): A dictionary of area requirements for elements. Defaults to None.
-            building_ratio (float, optional): The proportion of the plot area dedicated to the main building. Defaults to 0.75.
+            building_ratio (float, optional): The proportion of the plot area dedicated to the main building. Defaults to 0.45.
         """
         logger.debug(f"OptimizationEngine __init__ called with plot: {plot_width}x{plot_height}, building_ratio: {building_ratio}")
 
@@ -4465,8 +4465,8 @@ class OptimizationControlWidget(QWidget):
         # Define base weights for various scoring criteria.
         # These keys MUST match those used in OptimizationEngine.evaluate_layout().
         base_weights = {
-            'overlap': 250.0,
-            'out_of_bounds': 200.0,
+            'overlap': 2500.0,
+            'out_of_bounds': 2000.0,
             'movable_on_building_penalty': 3000.0, # Very high critical penalty
             'storage_welding_dist_penalty': 3.0,
             'storage_welding_dist_bonus': 2.0,
@@ -4810,7 +4810,7 @@ class ConstructionSiteOptimizerApp(QMainWindow):
         # Default plot dimensions and project settings (can be loaded or set by user)
         self.plot_width_m: float = 80.0
         self.plot_height_m: float = 50.0
-        self.building_ratio_val: float = 0.75 # Proportion of plot area for building
+        self.building_ratio_val: float = 0.45 # Proportion of plot area for building
 
         # These will hold the current state of constraints and requirements,
         # synchronized with the respective widgets or loaded from project files.
@@ -5257,7 +5257,7 @@ class ConstructionSiteOptimizerApp(QMainWindow):
         # Reset to application defaults
         self.plot_width_m = 80.0
         self.plot_height_m = 50.0
-        self.building_ratio_val = 0.75
+        self.building_ratio_val = 0.45
 
         # Update UI input fields to defaults, blocking signals temporarily
         self.plot_width_input.blockSignals(True)
@@ -5320,7 +5320,7 @@ class ConstructionSiteOptimizerApp(QMainWindow):
             # Load project settings
             self.plot_width_m = data.get('plot_width', 80.0)
             self.plot_height_m = data.get('plot_height', 50.0)
-            self.building_ratio_val = data.get('building_ratio', 0.75)
+            self.building_ratio_val = data.get('building_ratio', 0.45)
 
             # Update UI for plot settings, blocking signals
             self.plot_width_input.blockSignals(True); self.plot_width_input.setValue(self.plot_width_m); self.plot_width_input.blockSignals(False)
@@ -5803,22 +5803,26 @@ class ConstructionSiteOptimizerApp(QMainWindow):
 
     # --- Help Dialogs & About ---
     def _show_about_dialog(self):
-        about_text = (
-            f"<h3>{APPLICATION_NAME}</h3>"
-            f"<p>Version: {APP_VERSION}</p>"
-            "<p>A sophisticated GUI application for optimizing construction site facilities layout.</p>"
-            "<p><b>Features:</b></p>"
-            "<ul>"
-            "<li>Interactive site element placement and editing.</li>"
-            "<li>Automated layout optimization using Simulated Annealing.</li>"
-            "<li>Configurable space requirements and layout constraints.</li>"
-            "<li>Path planning for vehicle and pedestrian routes.</li>"
-            "<li>Project saving and loading capabilities.</li>"
-            "</ul>"
-            f"<p>© {QDate.currentDate().year()} {ORGANIZATION_NAME}. All rights reserved (if applicable).</p>"
-            "<p>Developed using Python and PyQt5.</p>"
-        )
-        QMessageBox.about(self, f"About {APPLICATION_NAME}", about_text)
+            current_year = QDate.currentDate().year()
+            about_text = (
+                f"<h3>{APPLICATION_NAME}</h3>"
+                f"<p>Version: {APP_VERSION}</p>"
+                "<p>A sophisticated GUI application for optimizing construction site facilities layout.</p>"
+                "<p>Developed by: <b>Hamoon Soleimani</b></p>" # ADDED/MODIFIED
+                "<p><b>Features:</b></p>"
+                "<ul>"
+                "<li>Interactive site element placement and editing.</li>"
+                "<li>Automated layout optimization using Simulated Annealing.</li>"
+                "<li>Configurable space requirements and layout constraints.</li>"
+                "<li>Path planning for vehicle and pedestrian routes.</li>"
+                "<li>Project saving and loading capabilities.</li>"
+                "</ul>"
+                # UPDATED COPYRIGHT LINE
+                f"<p>Copyright © {current_year} Hamoon Soleimani. All rights reserved.</p>"
+                "<p>This software is provided 'as-is', without any express or implied warranty.</p>" # Optional legal-like disclaimer
+                "<p>Further contact: hamoon.s2@gmail.com</p>" # Optional
+            )
+            QMessageBox.about(self, f"About {APPLICATION_NAME}", about_text)
 
     def _show_usage_guide(self):
         guide_text = (
