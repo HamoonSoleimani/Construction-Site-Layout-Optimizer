@@ -1,11 +1,8 @@
 # Construction Site Layout Optimizer
 
-![image](https://github.com/user-attachments/assets/7aae1ccb-b1e0-487e-9b72-acc01dd1549b)
-
 A sophisticated GUI application designed for optimizing the layout of temporary facilities on a construction site. It provides tools for defining site parameters, facility requirements, constraints, and uses a Simulated Annealing algorithm to find efficient layouts.
 
-![Application Screenshot (Placeholder - Replace with actual screenshot)](./screenshot.png)
-*(Suggestion: Add a screenshot of the application here. Name it `screenshot.png` and place it in the same directory as this README or adjust the path.)*
+![image](https://github.com/user-attachments/assets/7aae1ccb-b1e0-487e-9b72-acc01dd1549b)
 
 ## Features
 
